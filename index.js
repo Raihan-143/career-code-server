@@ -52,6 +52,18 @@ async function run() {
                 applicant: email
             }
             const result=await applicationsCollection.find(query).toArray();
+
+            //bad way to aggregate data
+            for(const applicantion of result){
+                const jobId=applicantion.jobId;
+                const jobQuery={_id: new ObjectId(jobId)}
+                const job=await jobsCollection.findOne(jobQuery);
+                applicantion.company=job.company
+                applicantion.title=job.title
+                applicantion.company_logo=job.company_logo
+                applicantion.category=job.category
+                applicantion.jobType=job.jobType
+            }
             res.send(result);
         })
         app.post('/applications', async(req,res)=>{
@@ -59,6 +71,7 @@ async function run() {
             console.log(application);
             const result=await applicationsCollection.insertOne(application);
             console.log(result);
+            res.send(result);
         });
 
         // Send a ping to confirm a successful connection
