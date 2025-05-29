@@ -31,7 +31,13 @@ async function run() {
         const applicationsCollection=client.db('careerCode').collection('applications');
         //jobs api
         app.get('/jobs', async(req,res)=>{
-            const cursor=jobsCollection.find();
+
+            const email=req.query.email;
+            const query={};
+            if(email){
+                query.hr_email=email;
+            }
+            const cursor=jobsCollection.find(query);
             const result=await cursor.toArray();
             res.send(result);
         });
@@ -43,6 +49,14 @@ async function run() {
             const result=await jobsCollection.findOne(query);
             res.send(result);
         });
+
+        //getting inserted id
+        app.post('/jobs', async(req,res)=>{
+            const newJob=req.body;
+            console.log(newJob);
+            const result=await jobsCollection.insertOne(newJob);
+            res.send(result);
+        })
 
         //job applications related apis
         app.get('/applications', async(req,res)=>{
