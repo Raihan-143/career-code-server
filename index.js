@@ -58,6 +58,14 @@ async function run() {
             res.send(result);
         })
 
+        //single job for single id
+        app.get('/applications/job/:job_id', async(req,res)=>{
+            const job_id=req.params.job_id;
+            const query={jobId: job_id}
+            const result=await applicationsCollection.find(query).toArray();
+            res.send(result);
+        })
+
         //job applications related apis
         app.get('/applications', async(req,res)=>{
             const email=req.query.email;
