@@ -3,6 +3,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express();
 const jwt=require('jsonwebtoken');
+const cookieParser= require('cookie-parser'); 
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -39,7 +40,13 @@ async function run() {
             const {email}=req.body;
             const user={email}
             const token=jwt.sign(user, process.env.JWT_ACCESS_SECRET, {expiresIn: '1h'})
-            res.send({token})
+
+            //set token in the cookies
+            res.cookie('token', token,{
+                httpOnly: true,
+                secure: false
+            })
+            res.send({success: true})
         })
         //jobs api
         app.get('/jobs', async(req,res)=>{
@@ -96,6 +103,7 @@ async function run() {
         //job applications related apis
         app.get('/applications', async(req,res)=>{
             const email=req.query.email;
+            console.log('Inside applications api:', req.cookies);
 
             const query={
                 applicant: email
