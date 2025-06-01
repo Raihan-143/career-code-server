@@ -13,7 +13,31 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 
+const logger=(req,res,next)=>{
+    console.log('Inside the logger middleware');
+    next();
+}
+
+const verifyToken=(req,res,next)=>{
+    const token=req?.cookies?.token;
+    console.log('Cookie in the middleware', token);
+
+    if(!token){
+        return res.status(401).send({message: 'Unauthorize access'})
+    }
+
+    //verify token
+    jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, decoded)=>{
+        if(err){
+            return res.status(401).send({message: 'Unauthorize access'})
+        }
+        req.decoded=decoded
+        next();
+    })
+    
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dreaming786.h49ou08.mongodb.net/?retryWrites=true&w=majority&appName=Dreaming786`;
@@ -101,9 +125,12 @@ async function run() {
         })
 
         //job applications related apis
-        app.get('/applications', async(req,res)=>{
+        app.get('/applications',logger,verifyToken, async(req,res)=>{
             const email=req.query.email;
-            console.log('Inside applications api:', req.cookies);
+            // console.log('Inside applications api:', req.cookies);
+            if(email !==req.decoded.email){
+                return res.status(403).send({message: 'Forbidden access'})
+            }
 
             const query={
                 applicant: email
